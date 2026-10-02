@@ -1,0 +1,95 @@
+# ==========================================================
+#  Configuración del manual. Normalmente NO hace falta tocar
+#  este archivo, salvo para agregar páginas al menú ("nav").
+# ==========================================================
+
+site_name: Manual de usuario
+
+# Menú lateral: aquí se agrega cada página nueva.
+# Formato:   - Título que se ve: carpeta/archivo.md
+nav:
+  - Inicio del manual: index.md
+  - Primeros pasos:
+      - Antes de empezar: primeros-pasos/antes-de-empezar.md
+      - Inicio de sesión: primeros-pasos/inicio-de-sesion.md
+      - Cómo moverte por la aplicación: primeros-pasos/navegacion.md
+  - Módulos:
+      - Inicio: modulos/inicio.md
+      - Ficha del cliente: modulos/ficha-cliente.md
+      - Punto de Venta: modulos/punto-de-venta.md
+      - Pedidos: modulos/pedidos.md
+      - Cobranzas: modulos/cobranzas.md
+      - Clientes: modulos/clientes.md
+      - Mis Solicitudes: modulos/mis-solicitudes.md
+      - Mi Cuota: modulos/mi-cuota.md
+      - Lista de precios: modulos/lista-de-precios.md
+      - Históricos: modulos/historicos.md
+      - Tracking: modulos/tracking.md
+      - Configuración: modulos/configuracion.md
+  - Glosario: glosario.md
+
+# Revisión de enlaces al generar el manual
+validation:
+  links:
+    anchors: warn
+
+# ---------- Diseño (no tocar) ----------
+theme:
+  name: material
+  language: es
+  font: false            # la letra Montserrat va dentro del manual (estilos/fuentes), no se descarga
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-night
+        name: Cambiar a modo oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/weather-sunny
+        name: Cambiar a modo claro
+  features:
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+
+extra_css:
+  - estilos/manual.css
+
+extra_javascript:
+  - js/ampliar.js
+  - js/numeros.js
+  - js/sesion.js          # botón "Iniciar sesión" del manual web (lleva a /editar/)
+
+# Permite abrir el manual con doble clic, sin servidor
+use_directory_urls: false
+
+plugins:
+  - search:
+      lang: es
+  - offline
+  - print-site:            # genera la versión para PDF (debe ir al final)
+      add_cover_page: true
+      cover_page_template: plantillas/portada.tpl
+      add_table_of_contents: true
+      toc_title: Contenido
+      enumerate_headings: false
+      add_print_site_banner: false
+      print_page_title: Manual de usuario
+
+markdown_extensions:
+  - admonition             # recuadros de aviso (!!! tip, !!! warning)
+  - pymdownx.details
+  - pymdownx.superfences
+  - attr_list              # permite { .captura } en las imágenes
+  - md_in_html             # permite las tarjetas de la portada
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - toc:
+      permalink: false

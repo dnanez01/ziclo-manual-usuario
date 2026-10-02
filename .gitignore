@@ -1,0 +1,6 @@
+# Lo que se genera o se respalda en este computador: no se sube a GitHub
+site/
+__pycache__/
+herramientas/respaldos/
+# Capturas originales sin recortar (unos 20 MB); el manual usa las de docs/imagenes
+herramientas/raw/

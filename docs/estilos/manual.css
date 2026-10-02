@@ -1,0 +1,309 @@
+/* ==========================================================
+   Estilos del manual — pensado para lectura cómoda.
+   No hace falta tocar este archivo para escribir páginas.
+   ========================================================== */
+
+/* ---------- Letra Montserrat, guardada en el manual: funciona sin internet ---------- */
+@font-face {
+  font-family: "Montserrat";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("fuentes/montserrat-latin-wght-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Montserrat";
+  font-style: italic;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("fuentes/montserrat-latin-wght-italic.woff2") format("woff2");
+}
+:root { --md-text-font: "Montserrat"; }
+
+/* ---------- Colores (los mismos azules de la app) ---------- */
+:root,
+[data-md-color-primary="custom"] {
+  --md-primary-fg-color: #163340;        /* azul marino — barra superior (como la barra de la app) */
+  --md-primary-fg-color--light: #24546A;
+  --md-primary-fg-color--dark: #0F2530;
+  --md-accent-fg-color: #9A6E2A;         /* bronce — al pasar el mouse */
+  --md-typeset-a-color: #24546A;         /* azul de los botones de la app */
+  --md-default-bg-color: #F7F4EE;        /* fondo crema */
+  --md-default-fg-color: #1F2D35;
+  --md-code-bg-color: #F1ECE2;
+  --md-footer-bg-color: #163340;
+}
+[data-md-color-scheme="slate"][data-md-color-primary="custom"] {
+  --md-primary-fg-color: #163340;
+  --md-primary-fg-color--dark: #0F2530;
+  --md-accent-fg-color: #D3A75E;
+  --md-typeset-a-color: #7FB3CC;         /* azul claro legible sobre fondo oscuro */
+  --md-default-bg-color: #0E1920;
+  --md-default-fg-color: #E3EAEF;
+  --md-default-fg-color--light: #94A8B4;
+  --md-code-bg-color: #152530;
+  --md-footer-bg-color: #163340;
+}
+/* Pasos numerados y encabezados de tabla con el azul de los botones de la app */
+[data-md-color-scheme="default"] .md-typeset ol > li::before,
+[data-md-color-scheme="default"] .md-typeset table:not([class]) th {
+  background: #24546A;
+}
+/* Menú lateral: sin fondo, la página actual resaltada en azul */
+.md-nav__link--active { font-weight: 700; }
+[data-md-color-scheme="default"] .md-nav__link--active { color: #24546A !important; }
+[data-md-color-scheme="slate"] .md-nav__link--active { color: #7FB3CC !important; }
+/* Círculos de los pasos en bronce en modo oscuro, para que resalten */
+[data-md-color-scheme="slate"] .md-typeset ol > li::before {
+  background: #D3A75E;
+  color: #101A16;
+}
+/* Tarjetas sobre fondo blanco para que resalten sobre el crema */
+[data-md-color-scheme="default"] .md-typeset .grid.cards > ul > li {
+  background: #FFFFFF;
+  border-color: #DCD5C7;
+}
+
+/* ---------- Letra grande y cómoda ---------- */
+.md-typeset {
+  font-size: 0.95rem;                    /* ≈ 19 px */
+  line-height: 1.7;
+}
+.md-typeset h1 {
+  font-weight: 700;
+  color: var(--md-default-fg-color);
+  margin-bottom: 0.6em;
+}
+.md-typeset h2 {
+  font-weight: 700;
+  margin-top: 1.8em;
+  padding-bottom: 0.25em;
+  border-bottom: 2px solid var(--md-default-fg-color--lightest);
+}
+.md-typeset strong { color: var(--md-default-fg-color); }
+.md-nav { font-size: 0.8rem; }
+
+/* ---------- Tablas con letra legible ---------- */
+.md-typeset table:not([class]) {
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.md-typeset table:not([class]) th {
+  background: var(--md-primary-fg-color);
+  color: #fff;
+}
+.md-typeset table:not([class]) td:first-child {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+/* Números de "Las partes de la pantalla": círculo rojo como el de la captura (lo pone js/numeros.js) */
+.md-typeset table[data-partes] td:first-child {
+  width: 3.4em;
+  text-align: center;
+  vertical-align: top;
+}
+.md-typeset .numero-captura {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.85em;
+  height: 1.85em;
+  border-radius: 50%;
+  background: #E53935;                   /* el mismo rojo de las marcas en las capturas */
+  color: #FFFFFF;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.md-typeset__table { width: 100%; }
+.md-typeset__table table:not([class]) { display: table; width: 100%; }
+@media (max-width: 600px) {
+  .md-typeset table:not([class]) th,
+  .md-typeset table:not([class]) td {
+    padding: 0.6em 0.5em;
+  }
+}
+
+/* ---------- Pasos numerados con círculos grandes ---------- */
+.md-typeset ol {
+  list-style: none;
+  counter-reset: paso;
+  margin-left: 0;
+  padding-left: 0;
+}
+.md-typeset ol > li {
+  counter-increment: paso;
+  position: relative;
+  margin: 0 0 1.6em 0;
+  padding-left: 3em;
+}
+.md-typeset ol > li::before {
+  content: counter(paso);
+  position: absolute;
+  left: 0;
+  top: -0.1em;
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  background: var(--md-primary-fg-color);
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Capturas con tamaño de celular ---------- */
+.md-typeset img.captura {
+  display: block;
+  max-width: 280px;
+  width: 100%;
+  margin: 1em 0 0.5em 0;
+  border: 8px solid #222;
+  border-radius: 28px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+}
+
+/* ---------- Recuadros de aviso más visibles ---------- */
+.md-typeset .admonition,
+.md-typeset details {
+  font-size: 0.9rem;
+  border-width: 0 0 0 5px;
+}
+
+/* ---------- Tarjetas de la portada ---------- */
+.md-typeset .grid.cards > ul > li {
+  font-size: 0.95rem;
+  border-width: 2px;
+}
+.md-typeset .grid.cards > ul > li:hover {
+  border-color: var(--md-primary-fg-color);
+}
+
+/* ---------- Versión PDF ---------- */
+@media print {
+  .md-typeset img.captura { max-width: 310px; max-height: 165mm; width: auto; box-shadow: none; break-inside: avoid; }
+  .md-typeset p:has(> img.captura) { break-inside: avoid; }
+  .md-typeset ol > li { break-inside: avoid; }
+}
+
+/* ---------- Ampliar capturas al tocarlas ---------- */
+.md-typeset img.captura { cursor: zoom-in; }
+.visor-captura {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3.2rem 1rem 1rem;
+  background: rgba(10, 20, 26, 0.85);      /* fondo oscuro */
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  cursor: zoom-out;
+}
+.visor-captura.abierto { opacity: 1; visibility: visible; }
+.visor-imagen {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  background: #fff;
+  cursor: default;
+  transform: scale(0.94);
+  transition: transform 0.2s ease;
+}
+.visor-captura.abierto .visor-imagen { transform: scale(1); }
+.visor-cerrar {
+  position: absolute;
+  top: 0.8rem;
+  right: 0.8rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 0;
+  border-radius: 50%;
+  background: #FFFFFF;
+  color: #163340;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+.visor-cerrar:hover, .visor-cerrar:focus-visible { background: #D3A75E; outline: none; }
+html.visor-activo, html.visor-activo body { overflow: hidden; }   /* sin desplazar el fondo */
+@media print { .visor-captura { display: none; } }
+
+/* ---------- El PDF siempre sale en modo claro ---------- */
+@media print {
+  [data-md-color-scheme="slate"][data-md-color-primary="custom"],
+  [data-md-color-scheme="slate"] {
+    --md-default-fg-color: rgba(0, 0, 0, 0.87);
+    --md-default-fg-color--light: rgba(0, 0, 0, 0.54);
+    --md-default-fg-color--lighter: rgba(0, 0, 0, 0.32);
+    --md-default-fg-color--lightest: rgba(0, 0, 0, 0.07);
+    --md-default-bg-color: #FFFFFF;
+    --md-default-bg-color--light: rgba(255, 255, 255, 0.7);
+    --md-default-bg-color--lighter: rgba(255, 255, 255, 0.3);
+    --md-default-bg-color--lightest: rgba(255, 255, 255, 0.12);
+    --md-code-fg-color: #36464E;
+    --md-code-bg-color: #F1ECE2;
+    --md-typeset-color: #1F2D35;
+    --md-typeset-a-color: #24546A;
+    --md-typeset-table-color: rgba(0, 0, 0, 0.12);
+    --md-typeset-table-color--light: rgba(0, 0, 0, 0.035);
+    --md-admonition-fg-color: #1F2D35;
+    --md-admonition-bg-color: #FFFFFF;
+    color-scheme: light;
+  }
+  body, .md-main, .md-content { background: #FFFFFF !important; }
+  .md-typeset { color: #1F2D35; }
+  .md-typeset strong, .md-typeset td, .md-typeset li, .md-typeset p { color: #1F2D35; }
+  .md-typeset a { color: #24546A; }
+  .md-typeset table:not([class]) { background: #FFFFFF; }
+  [data-md-color-scheme] .md-typeset ol > li::before,
+  [data-md-color-scheme] .md-typeset table:not([class]) th { background: #24546A; color: #FFFFFF; }
+  [data-md-color-scheme] .md-typeset .grid.cards > ul > li { background: #FFFFFF; border-color: #DCD5C7; }
+  .md-typeset h1, .md-typeset h2, .md-typeset h3 { color: #163340; }
+}
+@page { margin: 14mm 12mm; }
+
+/* ---------- Página del PDF: márgenes blancos, numeración en español y portada ---------- */
+@media print {
+  :root, html, body, [data-md-color-scheme] { background: #FFFFFF !important; color-scheme: light !important; }
+  .portada-pdf {
+    text-align: center;
+    padding-top: 28vh;
+    color: #163340;
+  }
+  .portada-pdf h1 {
+    font-size: 2.6rem;
+    color: #163340;
+    margin: 0.4em 0 0.2em;
+    border: 0;
+  }
+  .portada-marca {
+    font-size: 1rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #9A6E2A;
+    margin: 0;
+  }
+  .portada-sub { font-size: 1.2rem; color: #24546A; margin: 0; }
+  .portada-perfil, .portada-fecha { font-size: 0.9rem; color: #66798A; margin: 0.3em 0 0; }
+  .portada-perfil { margin-top: 3em; }
+}
+@page {
+  margin: 16mm 14mm;
+  @bottom-center { content: none; }
+  @bottom-right {
+    content: "Página " counter(page);
+    font-family: "Montserrat", sans-serif;
+    font-size: 9pt;
+    color: #66798A;
+  }
+}
