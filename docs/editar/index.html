@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <title>Editor del manual</title>
-<!-- Copia web de herramientas/editor.html. Habla con /api/... (Cloudflare Pages Functions) en vez de con editor.py. -->
+<!-- Copia web de herramientas/editor.html. Habla con /api/... (Cloudflare Pages Functions) en vez de con editor.py.
+     Inicio de sesión: correo corporativo + clave de edición, validados en el servidor; se guardan solo en sessionStorage. -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   @font-face { font-family:"Montserrat"; font-style:normal; font-weight:100 900; font-display:swap; src:url("/estilos/fuentes/montserrat-latin-wght-normal.woff2") format("woff2"); }
@@ -300,7 +301,15 @@
   .sesion { display:flex; align-items:center; gap:10px; margin-left:6px; font-size:12px; color:#667884; }
   .sesion .quien { display:flex; flex-direction:column; line-height:1.3; text-align:right; }
   .sesion .quien b { color:inherit; font-weight:600; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .sesion a.btn { text-decoration:none; }
+  .entrada { position:fixed; inset:0; z-index:10000; display:grid; place-items:center; padding:16px; background:var(--crema); }
+  .entrada[hidden] { display:none; }
+  .entrada form { width:100%; max-width:380px; background:var(--papel); border:1px solid var(--linea); border-radius:16px; box-shadow:var(--sombra-alta); padding:28px; display:flex; flex-direction:column; gap:10px; }
+  .entrada .logo { width:44px; height:44px; border-radius:12px; background:var(--marino); color:#fff; display:grid; place-items:center; }
+  .entrada h1 { margin:6px 0 0; font-size:20px; color:var(--marino); }
+  .entrada p { margin:0 0 6px; color:var(--gris); font-size:14px; }
+  .entrada label { font-size:13px; font-weight:600; color:var(--texto); margin-top:4px; }
+  .entrada .error { color:var(--peligro); background:var(--peligro-suave); border-radius:8px; padding:8px 10px; font-size:13px; }
+  .entrada .btn.principal { height:44px; justify-content:center; margin-top:8px; }
   @media (max-width:1100px) { .sesion .publica { display:none; } }
 </style>
 </head>
@@ -316,7 +325,7 @@
   <button class="btn" id="guardar" title="También con Ctrl + S"><span data-i="check"></span><span id="guardarTexto">Guardar</span></button>
   <div class="sesion">
     <div class="quien"><span class="publica">Los cambios se ven en el manual en 1 o 2 minutos</span><b id="correo" title="Persona conectada"></b></div>
-    <a class="btn suave" href="/cdn-cgi/access/logout" title="Cerrar la sesión">Salir</a>
+    <button class="btn suave" id="salir" title="Cerrar la sesión">Salir</button>
   </div>
 </header>
 
@@ -446,16 +455,19 @@
   <div class="acciones"><button class="btn" id="cancelarNueva">Cancelar</button><button class="btn principal" id="okNueva">Crear página</button></div>
 </dialog>
 
-<dialog id="dlgClave">
-  <div class="dlg-icono"><span data-i="check"></span></div>
-  <h3>Clave de edición</h3>
-  <p>Ingresa la clave de edición</p>
-  <form id="formClave" method="dialog">
-    <input id="claveEditor" class="campo" type="password" autocomplete="current-password" aria-label="Clave de edición">
-    <p id="claveMala" style="color:#B3261E;margin:8px 0 0" hidden>Clave incorrecta. Inténtalo de nuevo.</p>
-    <div class="acciones"><button class="btn principal" id="okClave" type="submit">Entrar</button></div>
+<div class="entrada" id="entrada" hidden>
+  <form id="formEntrada" autocomplete="on">
+    <div class="logo"><span data-i="book"></span></div>
+    <h1>Editor del manual</h1>
+    <p>App Ron Santa Teresa. Solo para personas autorizadas.</p>
+    <p class="error" id="entradaError" hidden></p>
+    <label for="entradaCorreo">Correo</label>
+    <input id="entradaCorreo" class="campo" type="email" placeholder="Ingrese su correo corporativo" autocomplete="username" required>
+    <label for="entradaClave">Clave</label>
+    <input id="entradaClave" class="campo" type="password" autocomplete="current-password" required>
+    <button class="btn principal" id="okEntrada" type="submit">Entrar</button>
   </form>
-</dialog>
+</div>
 
 <script>
 "use strict";
@@ -913,8 +925,8 @@ const imagenes = new Map();   // ruta -> promesa de URL blob
 function ponerImagen(img, src, nueva) {
   const ruta = decodeURIComponent(new URL(src, "http://x/docs/" + actual).pathname.replace(/^\/docs\//, ""));
   if (nueva || !imagenes.has(ruta)) imagenes.set(ruta, (async () => {
-    if (!leerClave()) await pedirClave(false);
-    const r = await fetch("/api/archivo?ruta=" + encodeURIComponent(ruta) + "&t=" + Date.now(), { headers: { "X-Clave-Editor": leerClave() } });
+    if (!leerSesion()) await pedirEntrada();
+    const r = await fetch("/api/archivo?ruta=" + encodeURIComponent(ruta) + "&t=" + Date.now(), { headers: cabeceras() });
     if (!r.ok) { imagenes.delete(ruta); return ""; }
     return URL.createObjectURL(await r.blob());
   })());
@@ -951,39 +963,55 @@ $("#trabajo").addEventListener("scroll", moverBurbuja);
 let original = "";   // contenido tal como está en el disco (para detectar si otra ventana lo cambió)
 const GRUPOS = { "": "Manual", "primeros-pasos": "Primeros pasos", "modulos": "Módulos" };
 
-/* La clave de edición se pide una vez por pestaña, se guarda solo en sessionStorage y viaja en cada
-   llamada en el encabezado X-Clave-Editor. El servidor la compara; si responde 401 se vuelve a pedir. */
-let pidiendoClave = null;
-function leerClave() { try { return sessionStorage.getItem("clave-editor") || ""; } catch (e) { return window.__clave || ""; } }
-function pedirClave(mala) {
-  if (!pidiendoClave) pidiendoClave = new Promise(listo => {
-    const d = $("#dlgClave"), c = $("#claveEditor");
-    $("#claveMala").hidden = !mala; c.value = "";
-    d.oncancel = e => e.preventDefault();
-    $("#formClave").onsubmit = e => {
-      e.preventDefault();
-      const v = c.value.trim(); if (!v) { c.focus(); return; }
-      try { sessionStorage.setItem("clave-editor", v); } catch (err) { window.__clave = v; }
-      d.close(); pidiendoClave = null; listo();
+/* Inicio de sesión: correo corporativo y clave de edición. Los valida el servidor (/api/sesion) y se
+   guardan solo en sessionStorage (se borran al cerrar la pestaña). Viajan en cada llamada en los
+   encabezados X-Correo-Editor y X-Clave-Editor. Si el servidor responde 401, se vuelve a la entrada. */
+let esperandoEntrada = null, ultimoCorreo = "";
+function leerSesion() { try { return JSON.parse(sessionStorage.getItem("sesion-editor") || "null"); } catch (e) { return window.__sesion || null; } }
+function guardarSesion(s) {
+  if (s) ultimoCorreo = s.correo;
+  try { s ? sessionStorage.setItem("sesion-editor", JSON.stringify(s)) : sessionStorage.removeItem("sesion-editor"); } catch (e) { window.__sesion = s; }
+}
+function cabeceras() { const s = leerSesion() || {}; return { "X-Correo-Editor": s.correo || "", "X-Clave-Editor": s.clave || "" }; }
+function pedirEntrada(aviso) {
+  if (!esperandoEntrada) esperandoEntrada = new Promise(listo => {
+    const caja = $("#entrada"), err = $("#entradaError"), btn = $("#okEntrada");
+    const error = m => { err.textContent = m; err.hidden = !m; };
+    error(aviso || "");
+    $("#entradaCorreo").value = ultimoCorreo; $("#entradaClave").value = "";
+    caja.hidden = false; (ultimoCorreo ? $("#entradaClave") : $("#entradaCorreo")).focus();
+    $("#formEntrada").onsubmit = async ev => {
+      ev.preventDefault();
+      const correo = $("#entradaCorreo").value.trim().toLowerCase(), clave = $("#entradaClave").value;
+      if (!/^[^\s@]+@nextepinnovation\.com$/i.test(correo)) { error("Usa tu correo corporativo"); $("#entradaCorreo").focus(); return; }
+      if (!clave) { $("#entradaClave").focus(); return; }
+      btn.disabled = true; btn.textContent = "Entrando…";
+      try {
+        const r = await fetch("/api/sesion", { headers: { "X-Correo-Editor": correo, "X-Clave-Editor": clave } });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) { error(j.error || "No se pudo entrar."); $("#entradaClave").select(); return; }
+        guardarSesion({ correo, clave }); $("#correo").textContent = correo;
+        caja.hidden = true; esperandoEntrada = null; listo();
+      } catch (e) { error("No hay conexión. Revisa tu internet e inténtalo de nuevo."); }
+      finally { btn.disabled = false; btn.textContent = "Entrar"; }
     };
-    d.showModal(); c.focus();
   });
-  return pidiendoClave;
+  return esperandoEntrada;
 }
 async function api(url, datos, intento = 0) {
-  if (!leerClave()) await pedirClave(false);
+  if (!leerSesion()) await pedirEntrada();
   let r;
   try {
-    const headers = { "X-Clave-Editor": leerClave() };
+    const headers = cabeceras();
     if (datos) headers["Content-Type"] = "application/json";
     r = await fetch(url, datos ? { method: "POST", headers, body: JSON.stringify(datos) } : { headers });
   } catch (e) {
-    throw new Error("No hay conexión. Revisa tu internet. Si dejaste el editor abierto mucho tiempo, puede que la sesión haya vencido: abre el editor en otra pestaña, ingrese su correo corporativo y vuelve aquí para guardar. No cierres esta página: tus cambios siguen aquí.");
+    throw new Error("No hay conexión. Revisa tu internet e inténtalo de nuevo. No cierres esta página: tus cambios siguen aquí.");
   }
   let j = {}; try { j = await r.json(); } catch (e) { }
-  if (r.status === 401 && j.clave && intento < 5) {
-    try { sessionStorage.removeItem("clave-editor"); } catch (e) { window.__clave = ""; }
-    await pedirClave(true);
+  if (r.status === 401 && intento < 5) {      // sesión inválida: vuelve a la entrada y reintenta sin perder lo escrito
+    guardarSesion(null);
+    await pedirEntrada(j.error);
     return api(url, datos, intento + 1);
   }
   if (!r.ok) { const err = new Error(j.error || "Ocurrió un error."); err.conflicto = !!j.conflicto; throw err; }
@@ -1486,7 +1514,8 @@ try {
   if (!localStorage.getItem("editor-bienvenida")) $("#bienvenida").hidden = false;
   if (localStorage.getItem("editor-vista") === "1") document.body.classList.add("con-vista"), $("#verVista").classList.add("activo");
 } catch (e) { $("#bienvenida").hidden = false; }
-api("/api/yo").then(j => { $("#correo").textContent = j.correo; }).catch(() => { });
+{ const s = leerSesion(); if (s) { ultimoCorreo = s.correo; $("#correo").textContent = s.correo; } }
+$("#salir").onclick = () => { guardarSesion(null); location.reload(); };   // al recargar se muestra la entrada
 cargarLista().then(() => abrir("index.md")).catch(e => mensaje("No se pudo abrir el editor", e.message));
 </script>
 </body>

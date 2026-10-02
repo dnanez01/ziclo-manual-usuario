@@ -8,10 +8,14 @@
  *   GITHUB_TOKEN   (secreto) token de grano fino con Contents: lectura y escritura, solo para el repositorio
  *   GITHUB_REPO    p. ej. dnanez01/ziclo-manual-usuario
  *   GITHUB_BRANCH  p. ej. main
- *   CLAVE_EDITOR   (secreto) clave compartida de edición. Cada llamada debe traer el encabezado
- *                  X-Clave-Editor con esa clave; se compara en el servidor, en tiempo constante.
- *   ACCESS_TEAM_DOMAIN y ACCESS_AUD (opcionales, recomendados): si están, además se verifica la firma
- *   del token de Cloudflare Access (Cf-Access-Jwt-Assertion).
+ *   CLAVE_EDITOR   (secreto) clave compartida de edición.
+ *   ACCESS_TEAM_DOMAIN y ACCESS_AUD (opcionales): solo si se usa Cloudflare Access; entonces además
+ *   se exige y verifica la firma de Access (Cf-Access-Jwt-Assertion) como capa extra.
+ *
+ * Inicio de sesión: cada llamada debe traer
+ *   X-Correo-Editor  un correo que termine en @nextepinnovation.com (sin importar mayúsculas)
+ *   X-Clave-Editor   igual a CLAVE_EDITOR, comparada en tiempo constante.
+ * Si algo falla: 401 con un mensaje claro, después de una pausa de 1 segundo (frena los intentos al azar).
  *
  * El token de GitHub solo vive aquí, en el servidor; nunca se envía al navegador.
  */
@@ -20,6 +24,8 @@ const PROTEGIDAS = new Set(["index.md"]);
 const MAX_IMAGEN = 10 * 1024 * 1024;
 const PAPELERA = "herramientas/papelera";
 const ZONA = "America/Caracas";
+const RX_CORREO = /^[a-z0-9._%+-]+@nextepinnovation\.com$/i;
+const PAUSA_FALLO = 1000;
 const TIPOS = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", svg: "image/svg+xml", woff2: "font/woff2" };
 const CONFLICTO = "Esta página cambió mientras la editabas, quizás otra persona la guardó. " +
   "Copia tu texto, vuelve a abrir la página y aplica tus cambios de nuevo.";
@@ -273,11 +279,13 @@ const esSha = s => /^[0-9a-f]{40}$/.test(s || "");
 
 /* ---------------- Rutas ---------------- */
 async function atender(req, env) {
-  const correo = (req.headers.get("Cf-Access-Authenticated-User-Email") || "").trim();
-  if (!correo) return json({ error: "Tienes que iniciar sesión. Ingrese su correo corporativo en la pantalla de acceso." }, 401);
+  const falla = async (error, codigo = 401) => { await new Promise(r => setTimeout(r, PAUSA_FALLO)); return json({ error, sesion: true }, codigo); };
+  const correo = (req.headers.get("X-Correo-Editor") || "").trim().toLowerCase();
   if (!env.CLAVE_EDITOR) return json({ error: "El editor web no está configurado (falta CLAVE_EDITOR)." }, 500);
-  if (!(await igualSeguro(req.headers.get("X-Clave-Editor") || "", env.CLAVE_EDITOR))) return json({ error: "Clave incorrecta", clave: true }, 401);
-  if (!(await verificarJWT(req, env, correo))) return json({ error: "Tu sesión no es válida. Vuelve a iniciar sesión." }, 401);
+  const claveOk = await igualSeguro(req.headers.get("X-Clave-Editor") || "", env.CLAVE_EDITOR);
+  if (!RX_CORREO.test(correo)) return falla("Usa tu correo corporativo");
+  if (!claveOk) return falla("Clave incorrecta");
+  if (!(await verificarJWT(req, env, correo))) return falla("Tu sesión no es válida. Vuelve a iniciar sesión.");
   if (!env.GITHUB_TOKEN || !env.GITHUB_REPO) return json({ error: "El editor web no está configurado (faltan GITHUB_TOKEN o GITHUB_REPO)." }, 500);
 
   const url = new URL(req.url), q = url.searchParams;
@@ -287,7 +295,7 @@ async function atender(req, env) {
 
   if (req.method === "GET") {
     switch (ruta) {
-      case "yo": return json({ correo });
+      case "yo": case "sesion": return json({ ok: true, correo });
       case "paginas": {
         const { paginas, carpetas, yml } = await todasLasPaginas(g, false);
         return json({ paginas, carpetas, nav: leerNav(yml) });
