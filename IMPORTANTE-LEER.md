@@ -33,3 +33,4 @@ La guía completa de instalación y mantenimiento está en [PUBLICAR-EN-LA-WEB.m
 - **Cloudflare tiene un límite de 500 publicaciones al mes en el plan gratis.** Cada guardado es una publicación. Para un manual es más que suficiente, pero no hay que guardar a cada letra.
 - **Los scripts `.sh` y `.command` tienen que quedar con saltos de línea de Mac.** El archivo `.gitattributes` ya lo controla, así que no lo borres.
 - Las copias de respaldo del editor de escritorio y las capturas originales sin recortar no se suben a GitHub; quedan solo en el computador donde se crearon.
+- **Retry deployment siempre en el despliegue más reciente,** el de arriba de la lista. Si se hace sobre uno viejo, Cloudflare vuelve a publicar una versión vieja del manual y del editor. Si pasa, basta con hacer Retry en el más reciente.
