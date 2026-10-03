@@ -1515,7 +1515,7 @@ try {
   if (localStorage.getItem("editor-vista") === "1") document.body.classList.add("con-vista"), $("#verVista").classList.add("activo");
 } catch (e) { $("#bienvenida").hidden = false; }
 { const s = leerSesion(); if (s) { ultimoCorreo = s.correo; $("#correo").textContent = s.correo; } }
-$("#salir").onclick = () => { guardarSesion(null); location.reload(); };   // al recargar se muestra la entrada
+$("#salir").onclick = () => { guardarSesion(null); location.href = "../"; };   // vuelve al manual
 cargarLista().then(() => abrir("index.md")).catch(e => mensaje("No se pudo abrir el editor", e.message));
 </script>
 </body>
