@@ -134,9 +134,9 @@ gratis hasta 50 personas, pero Cloudflare pide registrar una tarjeta. Por eso ho
 
 ## Mantenimiento
 
-### El token de GitHub vence el 1 de noviembre de 2026
+### El token de GitHub vence el 1 de octubre de 2027
 
-El editor web guarda los cambios en GitHub con un token de la cuenta **dnanez01**. Se llama **clave edicion**, se creó el 2 de octubre de 2026 y vence el **1 de noviembre de 2026**. Al renovarlo, conviene elegir un vencimiento de 1 año. Cuando venza, el editor mostrará un error al guardar, aunque el manual se siga viendo. Para renovarlo:
+El editor web guarda los cambios en GitHub con un token de la cuenta **dnanez01**. Se llama **clave edicion**, se regeneró el 2 de octubre de 2026 y vence el **1 de octubre de 2027**. Al renovarlo, elige **Custom** y la fecha más lejana que permita GitHub, que es 1 año. Cuando venza, el editor mostrará un error al guardar, aunque el manual se siga viendo. Para renovarlo:
 
 1. Entra a GitHub con la cuenta **dnanez01** y abre https://github.com/settings/personal-access-tokens.
 2. Abre el token **clave edicion** y toca **Regenerate token**. Si no existe, crea uno nuevo así:
