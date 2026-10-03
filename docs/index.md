@@ -1,6 +1,6 @@
 # Manual de usuario
 
-**Bienvenido** al manual de la aplicación de la fuerza de ventas de Ron Santa Teresa. Aquí encuentras, paso a paso, cómo usar cada parte de la aplicación en tu trabajo diario.
+Bienvenido al manual de la aplicación de la fuerza de ventas de Ron Santa Teresa. Aquí encuentras, paso a paso, cómo usar cada parte de la aplicación en tu trabajo diario.
 
 Si es tu primera vez, empieza por **Antes de empezar** y **Cómo moverte por la aplicación**. Después ve directo a la sección que necesites.
 
