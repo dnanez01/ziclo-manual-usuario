@@ -38,8 +38,6 @@ Aparece al deslizar el dedo hacia arriba.
 | 7 | **Clientes del día** | Los clientes que te toca visitar el día seleccionado, según tu ruta. Cada día tiene sus propios clientes, así que la lista cambia al elegir otra fecha. |
 
 <!-- PENDIENTE: texto exacto del mensaje que aparece cuando el día elegido no tiene visitas, y si el domingo tiene visitas. -->
-| 8 | **Barra inferior** | Siempre está visible. Te lleva a **Home**, **Cobranzas**, **Pedidos**, **Clientes** y **Tracking**. La pestaña de la pantalla en la que estás se ve resaltada. |
-
 
 ## Ver el detalle de una promoción
 
